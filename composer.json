@@ -1,0 +1,21 @@
+{
+    "name": "sayhey/ssjobs",
+    "description": "ssjobs",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "sayhey",
+            "email": "e7git@outlook.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=7.1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sayhey\\Jobs\\": "src"
+        }
+    }
+}
