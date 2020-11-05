@@ -68,7 +68,7 @@ class Console
         Log::info('console run ' . $action);
 
         try {
-            $this->$action();
+            return $this->$action();
         } catch (\Exception $e) {
             Util::logException($e);
             exit($e->getMessage() . PHP_EOL);
@@ -101,6 +101,8 @@ EOF;
             '{##}' => "\033[0m" // 清空颜色
         ];
         echo strtr($txt, $rep);
+        
+        return false;
     }
 
     /**
