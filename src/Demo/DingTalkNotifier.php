@@ -11,9 +11,9 @@ use Sayhey\Jobs\Interfaces\NotifierInterface;
 class DingTalkNotifier implements NotifierInterface
 {
 
-    private $_api = 'https://oapi.dingtalk.com/robot/send?access_token=';
-    private $_prefix = '';
-    private $_token = '';
+    private $api = 'https://oapi.dingtalk.com/robot/send?accesstoken=';
+    private $prefix = '';
+    private $token = '';
 
     /**
      * 构造方法
@@ -22,13 +22,13 @@ class DingTalkNotifier implements NotifierInterface
     public function __construct(array $params)
     {
         if (!empty($params['token']) && is_string($params['token'])) {
-            $this->_token = $params['token'];
+            $this->token = $params['token'];
         }
         if (!empty($params['prefix']) && is_string($params['prefix'])) {
-            $this->_prefix = $params['prefix'];
+            $this->prefix = $params['prefix'];
         }
 
-        $this->_api .= $this->_token;
+        $this->api .= $this->token;
     }
 
     /**
@@ -37,17 +37,17 @@ class DingTalkNotifier implements NotifierInterface
      */
     public function send($msg)
     {
-        if (!$this->_token) {
+        if (!$this->token) {
             return false;
         }
 
         $data = [
             'msgtype' => 'text',
-            'text' => ['content' => $this->_prefix . '#' . $msg]
+            'text' => ['content' => $this->prefix . '#' . $msg]
         ];
 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->_api);
+        curl_setopt($ch, CURLOPT_URL, $this->api);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json;charset=utf-8'));

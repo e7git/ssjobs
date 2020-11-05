@@ -15,22 +15,22 @@ class Jobs
 {
 
     // 配置
-    private $_staticWorkerCount = 1;                    // 静态子进程数
-    private $_dynamicWorkerCount = 0;                   // 动态子进程数
-    private $_topic = '';                               // 主题名称
-    private $_consumerClass;                            // 消费者类
-    private $_queueHealthSize = 0;                      // 健康的队列长度, 超出后将开启动态进程
-    private $_workerConfig = [];                        // 子进程配置
+    private $staticWorkerCount = 1;                     // 静态子进程数
+    private $dynamicWorkerCount = 0;                    // 动态子进程数
+    private $topic = '';                                // 主题名称
+    private $consumerClass;                             // 消费者类
+    private $queueHealthSize = 0;                       // 健康的队列长度, 超出后将开启动态进程
+    private $workerConfig = [];                         // 子进程配置
     // 运行时
-    private $_workers = [];                             // 挂载子进程列表
-    private $_historyWorkerSummary = [];                // 历史子进程信息汇总
-    private $_lastTriggerCondition = [];                // 最后触发消息提醒的数据信息
+    private $workers = [];                              // 挂载子进程列表
+    private $historyWorkerSummary = [];                 // 历史子进程信息汇总
+    private $lastTriggerCondition = [];                 // 最后触发消息提醒的数据信息
 
     /**
      * 队列
      * @var QueueInterface 
      */
-    private $_queue = null;
+    private $queue = null;
 
     /**
      * 构造方法
@@ -39,22 +39,22 @@ class Jobs
      */
     public function __construct(array $config, string $workerDataDir)
     {
-        $this->_topic = $config['topic'];
-        $this->_consumerClass = $config['consumer'];
-        $this->_staticWorkerCount = $config['static_workers'] ?? 1;
-        $this->_dynamicWorkerCount = $config['dynamic_workers'] ?? 0;
-        $this->_queueHealthSize = $config['queue_health_size'] ?? 0;
+        $this->topic = $config['topic'];
+        $this->consumerClass = $config['consumer'];
+        $this->staticWorkerCount = $config['static_workers'] ?? 1;
+        $this->dynamicWorkerCount = $config['dynamic_workers'] ?? 0;
+        $this->queueHealthSize = $config['queue_health_size'] ?? 0;
 
-        $this->_workerConfig = [
+        $this->workerConfig = [
             'max_execute_time' => $config['max_execute_time'] ?? 0,
             'max_consumer_count' => $config['max_consumer_count'] ?? 0,
             'dynamic_idle_time' => $config['dynamic_idle_time'] ?? 0,
             'data_dir' => $workerDataDir
         ];
 
-        $this->_queue = Queue::getQueue($this->_topic);
+        $this->queue = Queue::getQueue($this->topic);
 
-        $this->_lastConsumerTime = microtime(true);
+        $this->lastConsumerTime = microtime(true);
     }
 
     /**
@@ -63,7 +63,7 @@ class Jobs
      */
     public function getWorkerConfig(): array
     {
-        return $this->_workerConfig;
+        return $this->workerConfig;
     }
 
     /**
@@ -72,7 +72,7 @@ class Jobs
      */
     public function getTopic(): string
     {
-        return $this->_topic;
+        return $this->topic;
     }
 
     /**
@@ -81,16 +81,16 @@ class Jobs
      */
     public function createConsumer(): ConsumerInterface
     {
-        return new $this->_consumerClass();
+        return new $this->consumerClass();
     }
 
     /**
      * 返回队列消息数
      * @return int
      */
-    private function _getQueueSize(): int
+    private function getQueueSize(): int
     {
-        return $this->_queue->size();
+        return $this->queue->size();
     }
 
     /**
@@ -99,7 +99,7 @@ class Jobs
      */
     public function mountWorker(Worker $worker)
     {
-        $this->_workers[$worker->getPid()] = $worker;
+        $this->workers[$worker->getPid()] = $worker;
     }
 
     /**
@@ -108,18 +108,18 @@ class Jobs
      */
     public function unloadWorker(Worker $worker)
     {
-        unset($this->_workers[$worker->getPid()]);
+        unset($this->workers[$worker->getPid()]);
 
         // 回收并汇总到历史子进程信息
         $info = $worker->readDataInfo();
-        $this->_historyWorkerSummary['workers'] = ($this->_historyWorkerSummary['workers'] ?? 0) + 1;
-        $this->_historyWorkerSummary['done'] = ($this->_historyWorkerSummary['done'] ?? 0) + intval($info['done'] ?? 0);
-        $this->_historyWorkerSummary['failed'] = ($this->_historyWorkerSummary['failed'] ?? 0) + intval($info['failed'] ?? 0);
-        $this->_historyWorkerSummary['ack'] = ($this->_historyWorkerSummary['ack'] ?? 0) + intval($info['ack'] ?? 0);
-        $this->_historyWorkerSummary['reject'] = ($this->_historyWorkerSummary['reject'] ?? 0) + intval($info['reject'] ?? 0);
-        $this->_historyWorkerSummary['repush'] = ($this->_historyWorkerSummary['repush'] ?? 0) + intval($info['repush'] ?? 0);
-        $this->_historyWorkerSummary['duration'] = round(($this->_historyWorkerSummary['duration'] ?? 0) + floatval($info['duration'] ?? 0), 4);
-        $this->_historyWorkerSummary['cost'] = round(($this->_historyWorkerSummary['cost'] ?? 0) + floatval($info['cost'] ?? 0), 4);
+        $this->historyWorkerSummary['workers'] = ($this->historyWorkerSummary['workers'] ?? 0) + 1;
+        $this->historyWorkerSummary['done'] = ($this->historyWorkerSummary['done'] ?? 0) + intval($info['done'] ?? 0);
+        $this->historyWorkerSummary['failed'] = ($this->historyWorkerSummary['failed'] ?? 0) + intval($info['failed'] ?? 0);
+        $this->historyWorkerSummary['ack'] = ($this->historyWorkerSummary['ack'] ?? 0) + intval($info['ack'] ?? 0);
+        $this->historyWorkerSummary['reject'] = ($this->historyWorkerSummary['reject'] ?? 0) + intval($info['reject'] ?? 0);
+        $this->historyWorkerSummary['repush'] = ($this->historyWorkerSummary['repush'] ?? 0) + intval($info['repush'] ?? 0);
+        $this->historyWorkerSummary['duration'] = round(($this->historyWorkerSummary['duration'] ?? 0) + floatval($info['duration'] ?? 0), 4);
+        $this->historyWorkerSummary['cost'] = round(($this->historyWorkerSummary['cost'] ?? 0) + floatval($info['cost'] ?? 0), 4);
     }
 
     /**
@@ -128,7 +128,7 @@ class Jobs
      */
     public function createStaticWorkers($callback)
     {
-        for ($i = 0; $i < $this->_staticWorkerCount; $i++) {
+        for ($i = 0; $i < $this->staticWorkerCount; $i++) {
             call_user_func($callback);
         }
     }
@@ -140,10 +140,10 @@ class Jobs
     public function createDynamicWorkers($callback)
     {
         try {
-            if (0 === $this->_queueHealthSize || $this->_queueHealthSize > $this->_getQueueSize()) {
+            if (0 === $this->queueHealthSize || $this->queueHealthSize > $this->getQueueSize()) {
                 return false;
             }
-            for ($i = count($this->_workers); $i < ($this->_dynamicWorkerCount + $this->_staticWorkerCount); $i++) {
+            for ($i = count($this->workers); $i < ($this->dynamicWorkerCount + $this->staticWorkerCount); $i++) {
                 call_user_func($callback);
             }
         } catch (\Exception $ex) {
@@ -157,35 +157,35 @@ class Jobs
      */
     public function getTriggerNotification(): array
     {
-        $msg_arr = [];
+        $msgArr = [];
 
         // 队列积压检测
-        if ($this->_queueHealthSize > 0) {
-            $wait_count = $this->_getQueueSize();
+        if ($this->queueHealthSize > 0) {
+            $waitCount = $this->getQueueSize();
 
-            if ($wait_count > max($this->_queueHealthSize * 2, intval($this->_lastTriggerCondition['queue'] ?? 0))) {
-                $msg_arr[] = '队列积压条数=' . $wait_count;
+            if ($waitCount > max($this->queueHealthSize * 2, intval($this->lastTriggerCondition['queue'] ?? 0))) {
+                $msgArr[] = '队列积压条数=' . $waitCount;
             }
 
-            $this->_lastTriggerCondition['queue'] = $wait_count;
+            $this->lastTriggerCondition['queue'] = $waitCount;
         }
 
         // 子进程信息汇总检测
         $sum = $this->getWorkerSummary();
-        if ($sum['failed'] > intval($this->_lastTriggerCondition['failed'] ?? 0)) {
-            $msg_arr[] = '消息处理失败条数=' . $sum['failed'];
-            $this->_lastTriggerCondition['failed'] = $sum['failed'];
+        if ($sum['failed'] > intval($this->lastTriggerCondition['failed'] ?? 0)) {
+            $msgArr[] = '消息处理失败条数=' . $sum['failed'];
+            $this->lastTriggerCondition['failed'] = $sum['failed'];
         }
-        if ($sum['reject'] > intval($this->_lastTriggerCondition['reject'] ?? 0)) {
-            $msg_arr[] = '消息拒绝条数=' . $sum['reject'];
-            $this->_lastTriggerCondition['reject'] = $sum['reject'];
+        if ($sum['reject'] > intval($this->lastTriggerCondition['reject'] ?? 0)) {
+            $msgArr[] = '消息拒绝条数=' . $sum['reject'];
+            $this->lastTriggerCondition['reject'] = $sum['reject'];
         }
-        if ($sum['repush'] > intval($this->_lastTriggerCondition['repush'] ?? 0)) {
-            $msg_arr[] = '消息重新入队条数=' . $sum['repush'];
-            $this->_lastTriggerCondition['repush'] = $sum['repush'];
+        if ($sum['repush'] > intval($this->lastTriggerCondition['repush'] ?? 0)) {
+            $msgArr[] = '消息重新入队条数=' . $sum['repush'];
+            $this->lastTriggerCondition['repush'] = $sum['repush'];
         }
 
-        return $msg_arr;
+        return $msgArr;
     }
 
     /**
@@ -196,7 +196,7 @@ class Jobs
     {
         $item = [
             'topic' => $this->getTopic(),
-            'queue' => $this->_getQueueSize(),
+            'queue' => $this->getQueueSize(),
             'error' => [],
             'workers' => 0,
             'history_workers' => 0,
@@ -208,7 +208,7 @@ class Jobs
             'duration' => 0,
             'cost' => 0,
         ];
-        foreach ($this->_workers as $pid => $worker) {
+        foreach ($this->workers as $pid => $worker) {
             if (!!$info = $worker->readDataInfo()) {
                 $item['workers']++;
                 $item['done'] += intval($info['done'] ?? 0);
@@ -221,12 +221,12 @@ class Jobs
             } else {
                 $item['error'][] = 'READ_FAIL';
             }
-            if (!isset($this->_workers[$pid])) {
+            if (!isset($this->workers[$pid])) {
                 $item['error'][] = 'MISMATCH';
             }
         }
 
-        $history = $this->_historyWorkerSummary;
+        $history = $this->historyWorkerSummary;
         if (!empty($history['workers'])) {
             $item['history_workers'] = intval($history['workers']);
             $item['done'] += intval($history['done'] ?? 0);

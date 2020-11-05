@@ -20,13 +20,13 @@ class Log
      * 日志类
      * @var LogInterface 
      */
-    private static $_logger = null;
+    private static $logger = null;
 
     /**
      * 通知类
      * @var NotifierInterface 
      */
-    private static $_notifier = null;
+    private static $notifier = null;
 
     /**
      * 初始化
@@ -37,8 +37,8 @@ class Log
     public static function init(array $config)
     {
         try {
-            self::_initLogger($config['log'] ?? []);
-            self::_initNotifier($config['notifier'] ?? []);
+            self::initLogger($config['log'] ?? []);
+            self::initNotifier($config['notifier'] ?? []);
         } catch (\Exception $e) {
             throw $e;
         }
@@ -49,9 +49,9 @@ class Log
      * @param array $config
      * @throws Exception
      */
-    private static function _initLogger(array $config)
+    private static function initLogger(array $config)
     {
-        if (!self::$_logger) {
+        if (!self::$logger) {
             $class = $config['class'] ?? null;
             $params = (isset($config['params']) && is_array($config['params'])) ? $config['params'] : [];
 
@@ -65,7 +65,7 @@ class Log
                 throw new FatalException('log.class ' . $class . ' must implements class ' . LogInterface::class);
             }
 
-            self::$_logger = new $class($params);
+            self::$logger = new $class($params);
         }
     }
 
@@ -74,9 +74,9 @@ class Log
      * @param array $config
      * @throws Exception
      */
-    private static function _initNotifier(array $config)
+    private static function initNotifier(array $config)
     {
-        if (!self::$_notifier) {
+        if (!self::$notifier) {
             $class = $config['class'] ?? null;
             $params = (isset($config['params']) && is_array($config['params'])) ? $config['params'] : [];
             if (!isset($params['log_notify']) || true !== $params['log_notify']) {
@@ -93,7 +93,7 @@ class Log
                 throw new FatalException('notifier.class ' . $class . ' must implements class ' . NotifierInterface::class);
             }
 
-            self::$_notifier = new $class($params);
+            self::$notifier = new $class($params);
         }
     }
 
@@ -105,11 +105,11 @@ class Log
     public static function info(string $msg, bool $need_notify = false)
     {
         try {
-            if (self::$_logger) {
-                self::$_logger->log($msg, self::LEVEL_INFO);
+            if (self::$logger) {
+                self::$logger->log($msg, self::LEVEL_INFO);
             }
             if ($need_notify) {
-                self::_logNotify($msg);
+                self::logNotify($msg);
             }
         } catch (\Exception $e) {
             // no code
@@ -124,11 +124,11 @@ class Log
     public static function error(string $msg, bool $need_notify = true)
     {
         try {
-            if (self::$_logger) {
-                self::$_logger->log($msg, self::LEVEL_ERROR);
+            if (self::$logger) {
+                self::$logger->log($msg, self::LEVEL_ERROR);
             }
             if ($need_notify) {
-                self::_logNotify($msg);
+                self::logNotify($msg);
             }
         } catch (\Exception $e) {
             // no code
@@ -139,10 +139,10 @@ class Log
      * 日志通知
      * @param string $msg
      */
-    private static function _logNotify(string $msg)
+    private static function logNotify(string $msg)
     {
-        if (self::$_notifier) {
-            $notifier = self::$_notifier;
+        if (self::$notifier) {
+            $notifier = self::$notifier;
             go(function() use($notifier, $msg) {
                 $notifier->send($msg);
             });

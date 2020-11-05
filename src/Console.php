@@ -18,8 +18,8 @@ use Sayhey\Jobs\Core\Process;
 class Console
 {
 
-    private $_runningMasterPid = 0;                     // 运行中的主进程pid
-    private $_runningMasterPidFile = '';                // 运行中的主进程pid文件
+    private $runningMasterPid = 0;                      // 运行中的主进程pid
+    private $runningMasterPidFile = '';                 // 运行中的主进程pid文件
 
     /**
      * 构造方法
@@ -33,11 +33,11 @@ class Console
             Log::init($config);
 
             $process = new Process();
-            $this->_runningMasterPid = $process->readMasterPid();
-            if (!$this->_signal()) {
-                $this->_runningMasterPid = null;
+            $this->runningMasterPid = $process->readMasterPid();
+            if (!$this->signal()) {
+                $this->runningMasterPid = null;
             } else {
-                $this->_runningMasterPidFile = $process->getMasterPidFile();
+                $this->runningMasterPidFile = $process->getMasterPidFile();
             }
         } catch (\Exception $e) {
             Util::logException($e);
@@ -110,13 +110,13 @@ EOF;
     public function start(): bool
     {
         // 运行中
-        if ($this->_runningMasterPid) {
-            echo 'process already running, please stop or stop it first, PID=', $this->_runningMasterPid, PHP_EOL;
+        if ($this->runningMasterPid) {
+            echo 'process already running, please stop or stop it first, PID=', $this->runningMasterPid, PHP_EOL;
             return false;
         }
 
         // 检查配置
-        if (true !== $result = $this->_checkConfig()) {
+        if (true !== $result = $this->checkConfig()) {
             echo 'configuration has error, ', $result, PHP_EOL;
             return false;
         }
@@ -135,26 +135,26 @@ EOF;
     public function stop(): bool
     {
         // 运行中则停止
-        if ($this->_runningMasterPid) {
-            $this->_signal(SIGUSR1);
+        if ($this->runningMasterPid) {
+            $this->signal(SIGUSR1);
             echo 'stopping...', PHP_EOL;
             for ($i = 0; $i < 200; $i++) {
-                if (!Util::is_file($this->_runningMasterPidFile)) {
+                if (!Util::isFile($this->runningMasterPidFile)) {
                     break;
                 }
                 usleep(100000); // 0.1秒
             }
 
             for ($i = 0; $i < 10; $i++) {
-                if (!$this->_signal()) {
+                if (!$this->signal()) {
                     echo 'stop success', PHP_EOL;
-                    $this->_runningMasterPid = 0;
+                    $this->runningMasterPid = 0;
                     return true;
                 }
                 usleep(1000000); // 1秒
             }
 
-            if ($this->_runningMasterPid) {
+            if ($this->runningMasterPid) {
                 echo 'stop failed', PHP_EOL;
                 return false;
             }
@@ -171,7 +171,7 @@ EOF;
     public function restart()
     {
         // 未运行则启动
-        if (!$this->_runningMasterPid) {
+        if (!$this->runningMasterPid) {
             echo 'process not running, it will start', PHP_EOL;
             return $this->start();
         }
@@ -180,7 +180,7 @@ EOF;
         echo 'process already running, it will restart', PHP_EOL;
         $this->stop();
 
-        if ($this->_runningMasterPid) {
+        if ($this->runningMasterPid) {
             echo 'restart failed, please try again', PHP_EOL;
             return false;
         }
@@ -195,7 +195,7 @@ EOF;
     public function revive()
     {
         // 未运行则启动
-        if (!$this->_runningMasterPid) {
+        if (!$this->runningMasterPid) {
             echo 'process not running, it will start', PHP_EOL;
             $this->start();
             return true;
@@ -209,7 +209,7 @@ EOF;
      */
     public function check()
     {
-        if (true !== $result = $this->_checkConfig()) {
+        if (true !== $result = $this->checkConfig()) {
             echo 'configuration has error, ', $result, PHP_EOL;
         } else {
             echo 'configuration is OK', PHP_EOL;
@@ -223,17 +223,17 @@ EOF;
      */
     public function status()
     {
-        $file_is_latest = true;
-        if (!$this->_runningMasterPid) {
-            $file_is_latest = false;
+        $fileIsLatest = true;
+        if (!$this->runningMasterPid) {
+            $fileIsLatest = false;
             echo PHP_EOL, 'process is not running! ', PHP_EOL, 'here is the last process status info', PHP_EOL, PHP_EOL;
             sleep(3);
         } else {
-            $file_is_latest = true;
-            $this->_signal(SIGUSR2);
+            $fileIsLatest = true;
+            $this->signal(SIGUSR2);
         }
 
-        echo (new Process())->readStatusInfo($file_is_latest);
+        echo (new Process())->readStatusInfo($fileIsLatest);
         return false;
     }
 
@@ -241,7 +241,7 @@ EOF;
      * 检查配置
      * @return string|true 当返回true表通过，string表报错
      */
-    private function _checkConfig()
+    private function checkConfig()
     {
         $config = Config::get();
 
@@ -340,12 +340,12 @@ EOF;
      * @param int $signal
      * @return mix
      */
-    private function _signal(int $signal = 0)
+    private function signal(int $signal = 0)
     {
-        if (!$this->_runningMasterPid) {
+        if (!$this->runningMasterPid) {
             return false;
         }
-        return \Swoole\Process::kill($this->_runningMasterPid, $signal);
+        return \Swoole\Process::kill($this->runningMasterPid, $signal);
     }
 
 }

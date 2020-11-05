@@ -9,7 +9,7 @@ namespace Sayhey\Jobs\Common;
 class Config
 {
 
-    private static $_config = [];           // 配置内容
+    private static $config = [];            // 配置内容
 
     /**
      * 设置配置
@@ -17,7 +17,7 @@ class Config
      */
     public static function init(array $config)
     {
-        self::$_config = $config;
+        self::$config = $config;
     }
 
     /**
@@ -30,14 +30,14 @@ class Config
     public static function get(string $section = '', string $key = '', $default = null)
     {
         if ('' === $section) {
-            return self::$_config;
+            return self::$config;
         }
 
         if ('' === $key) {
-            return self::$_config[$section] ?? $default;
+            return self::$config[$section] ?? $default;
         }
 
-        return self::$_config[$section][$key] ?? $default;
+        return self::$config[$section][$key] ?? $default;
     }
 
 }

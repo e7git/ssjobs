@@ -13,17 +13,17 @@ use Sayhey\Jobs\Exception\FatalException;
 class RedisQueue implements QueueInterface
 {
 
-    private $_host;                                     // 主机
-    private $_port;                                     // 端口
-    private $_auth;                                     // 密码
-    private $_db;                                       // 数据库
-    private $_queueName;                                // 队列名
+    private $host;                                      // 主机
+    private $port;                                      // 端口
+    private $auth;                                      // 密码
+    private $db;                                        // 数据库
+    private $queueName;                                 // 队列名
 
     /**
      * 操作者
      * @var \Redis
      */
-    private $_handler;
+    private $handler;
 
     /**
      * 构造函数
@@ -32,13 +32,13 @@ class RedisQueue implements QueueInterface
      */
     private function __construct(array $config, string $queueName)
     {
-        $this->_queueName = $queueName;
-        $this->_host = $config['host'] ?? '127.0.0.1';
-        $this->_port = $config['port'] ?? 6379;
-        $this->_db = $config['db'] ?? 0;
-        $this->_auth = $config['pass'] ?? '';
-        $this->_handler = new \Redis();
-        $this->_connect();
+        $this->queueName = $queueName;
+        $this->host = $config['host'] ?? '127.0.0.1';
+        $this->port = $config['port'] ?? 6379;
+        $this->db = $config['db'] ?? 0;
+        $this->auth = $config['pass'] ?? '';
+        $this->handler = new \Redis();
+        $this->connect();
     }
 
     /**
@@ -68,18 +68,18 @@ class RedisQueue implements QueueInterface
      * 连接Redis
      * @throws \RedisException
      */
-    private function _connect()
+    private function connect()
     {
         try {
-            if (empty($this->_host) || empty($this->_port)) {
+            if (empty($this->host) || empty($this->port)) {
                 throw new FatalException('redis host or port is empty');
             }
-            $this->_handler->connect($this->_host, $this->_port, 3);
-            if (!empty($this->_auth)) {
-                $this->_handler->auth($this->_auth);
+            $this->handler->connect($this->host, $this->port, 3);
+            if (!empty($this->auth)) {
+                $this->handler->auth($this->auth);
             }
-            if (!empty($this->_db)) {
-                $this->_handler->select($this->_db);
+            if (!empty($this->db)) {
+                $this->handler->select($this->db);
             }
         } catch (\RedisException $e) {
             throw $e;
@@ -92,7 +92,7 @@ class RedisQueue implements QueueInterface
      */
     public function isConntected(): bool
     {
-        return $this->_handler->isConnected();
+        return $this->handler->isConnected();
     }
 
     /**
@@ -102,8 +102,8 @@ class RedisQueue implements QueueInterface
     public function size(): int
     {
         try {
-            $len = $this->_command(function() {
-                return $this->_handler->lLen($this->_queueName);
+            $len = $this->command(function() {
+                return $this->handler->lLen($this->queueName);
             });
             if (!$len) {
                 return 0;
@@ -119,7 +119,7 @@ class RedisQueue implements QueueInterface
      * @param callable $callback
      * @return mixed
      */
-    private function _command($callback)
+    private function command($callback)
     {
         try {
             return call_user_func($callback);
@@ -127,26 +127,26 @@ class RedisQueue implements QueueInterface
             if ($this->isConntected()) {
                 throw $e;
             }
-            $try_times = 0; // 尝试3次重连执行
+            $tryTimes = 0; // 尝试3次重连执行
             $error = null;
             do {
                 // 失败后重连
-                if ($try_times == 1) {
+                if ($tryTimes == 1) {
                     sleep(1);
-                } else if ($try_times == 2) {
+                } else if ($tryTimes == 2) {
                     sleep(2);
                 }
 
                 // 尝试重连
                 try {
-                    if ($this->_connect()) {
+                    if ($this->connect()) {
                         return call_user_func($callback);
                     }
                 } catch (\RedisException $e) {
                     $error = $e;
                 }
-                $try_times++;
-            } while ($try_times <= 3);
+                $tryTimes++;
+            } while ($tryTimes <= 3);
             if ($error) {
                 throw $error;
             }
@@ -160,8 +160,8 @@ class RedisQueue implements QueueInterface
     public function pop()
     {
         try {
-            $ret = $this->_command(function() {
-                return $this->_handler->brPop($this->_queueName, 1);
+            $ret = $this->command(function() {
+                return $this->handler->brPop($this->queueName, 1);
             });
             if (empty($ret)) {
                 return null;
@@ -178,9 +178,9 @@ class RedisQueue implements QueueInterface
      */
     public function close()
     {
-        if ($this->_handler) {
-            $this->_handler->close();
-            $this->_handler = null;
+        if ($this->handler) {
+            $this->handler->close();
+            $this->handler = null;
         }
     }
 
@@ -192,8 +192,8 @@ class RedisQueue implements QueueInterface
     public function repush(string $body): bool
     {
         try {
-            $ret = $this->_command(function() use($body) {
-                return $this->_handler->lPush($this->_queueName, $body);
+            $ret = $this->command(function() use($body) {
+                return $this->handler->lPush($this->queueName, $body);
             });
             if ($ret) {
                 return true;

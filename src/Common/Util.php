@@ -36,7 +36,7 @@ class Util
     public static function unlink(string $file): bool
     {
 
-        if (!self::is_file($file)) {
+        if (!self::isFile($file)) {
             return false;
         }
 
@@ -48,7 +48,7 @@ class Util
      * @param string $file
      * @return bool
      */
-    public static function is_file(string $file): bool
+    public static function isFile(string $file): bool
     {
         if ('' === $file) {
             return false;
@@ -70,7 +70,7 @@ class Util
      * @param int $mode
      * @return bool
      */
-    public static function file_put_contents(string $filename, $content, int $mode = null): bool
+    public static function filePutContents(string $filename, $content, int $mode = null): bool
     {
         if ('' === $filename) {
             return false;
@@ -98,9 +98,9 @@ class Util
      * @param string $filename
      * @return string|false
      */
-    public static function file_get_contents(string $filename)
+    public static function fileGetContents(string $filename)
     {
-        if (!self::is_file($filename) || !is_readable($filename)) {
+        if (!self::isFile($filename) || !is_readable($filename)) {
             return false;
         }
 
@@ -116,9 +116,9 @@ class Util
      * @param string $filename
      * @return bool
      */
-    public static function file_is_latest(string $filename): bool
+    public static function fileIsLatest(string $filename): bool
     {
-        if (!self::is_file($filename) || !is_readable($filename) || !filemtime($filename)) {
+        if (!self::isFile($filename) || !is_readable($filename) || !filemtime($filename)) {
             return false;
         }
 

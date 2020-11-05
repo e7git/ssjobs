@@ -13,9 +13,9 @@ class Message
     const STATUS_REJECT = 'REJECT';                     // 状态拒绝
     const STATUS_REPUSH = 'REPUSH';                     // 状态重新入队
 
-    private $_status = '';                              // 状态
-    private $_isDone = false;                           // 是否处理
-    private $_body = '';                                // 消息体
+    private $status = '';                               // 状态
+    private $isDone = false;                            // 是否处理
+    private $body = '';                                 // 消息体
 
     /**
      * 构造方法
@@ -23,9 +23,9 @@ class Message
      */
     public function __construct(string $body)
     {
-        $this->_body = $body;
-        $this->_isDone = false;
-        $this->_status = '';
+        $this->body = $body;
+        $this->isDone = false;
+        $this->status = '';
     }
 
     /**
@@ -34,7 +34,7 @@ class Message
      */
     public function getBody(): string
     {
-        return $this->_body;
+        return $this->body;
     }
 
     /**
@@ -43,7 +43,7 @@ class Message
      */
     public function isDone(): bool
     {
-        return $this->_isDone;
+        return $this->isDone;
     }
 
     /**
@@ -52,8 +52,8 @@ class Message
      */
     public function ack(): bool
     {
-        $this->_isDone = true;
-        $this->_status = self::STATUS_ACK;
+        $this->isDone = true;
+        $this->status = self::STATUS_ACK;
         return true;
     }
 
@@ -63,7 +63,7 @@ class Message
      */
     public function isAck(): bool
     {
-        return self::STATUS_ACK === $this->_status;
+        return self::STATUS_ACK === $this->status;
     }
 
     /**
@@ -72,8 +72,8 @@ class Message
      */
     public function reject(): bool
     {
-        $this->_isDone = true;
-        $this->_status = self::STATUS_REJECT;
+        $this->isDone = true;
+        $this->status = self::STATUS_REJECT;
         return true;
     }
 
@@ -83,7 +83,7 @@ class Message
      */
     public function isReject(): bool
     {
-        return self::STATUS_REJECT === $this->_status;
+        return self::STATUS_REJECT === $this->status;
     }
 
     /**
@@ -92,8 +92,8 @@ class Message
      */
     public function repush(): bool
     {
-        $this->_isDone = true;
-        $this->_status = self::STATUS_REPUSH;
+        $this->isDone = true;
+        $this->status = self::STATUS_REPUSH;
         return true;
     }
 
@@ -103,7 +103,7 @@ class Message
      */
     public function isRepush(): bool
     {
-        return self::STATUS_REPUSH === $this->_status;
+        return self::STATUS_REPUSH === $this->status;
     }
 
 }

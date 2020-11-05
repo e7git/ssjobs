@@ -33,16 +33,16 @@ class Queue
             throw new FatalException('queue.class ' . $class . ' must implements class ' . QueueInterface::class);
         }
 
-        $last_exception = null;
+        $lastException = null;
         for ($i = 0; $i < 3; $i++) {
             try {
                 return $class::getConnection($params, $topic);
             } catch (\Exception $e) {
-                $last_exception = $e;
+                $lastException = $e;
             }
         }
-        if (!$last_exception) {
-            throw $last_exception;
+        if (!$lastException) {
+            throw $lastException;
         }
     }
 

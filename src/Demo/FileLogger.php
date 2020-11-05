@@ -16,9 +16,9 @@ class FileLogger implements LogInterface
     const LOG_FILENAME = 'process';                     // 日志文件名
     const LOG_FILENAME_POSTFIX = '.log';                // 日志文件名后缀
 
-    private $_logFile = '';                             // 日志文件
-    private $_logMaxSize = 10;                          // 单个日志文件大小限制，单位(MB)，日志超出大小将切割
-    private $_logMaxCount = 9;                          // 日志文件数量限制，超出将删除
+    private $logFile = '';                              // 日志文件
+    private $logMaxSize = 10;                           // 单个日志文件大小限制，单位(MB)，日志超出大小将切割
+    private $logMaxCount = 9;                           // 日志文件数量限制，超出将删除
 
     /**
      * 构造方法
@@ -31,9 +31,9 @@ class FileLogger implements LogInterface
             throw new FatalException('filelogger init error, config log_dir is empty');
         }
 
-        $this->_logFile = rtrim($config['log_dir'], DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . self::LOG_FILENAME . self::LOG_FILENAME_POSTFIX;
+        $this->logFile = rtrim($config['log_dir'], DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . self::LOG_FILENAME . self::LOG_FILENAME_POSTFIX;
 
-        if (!Util::mkdir(dirname($this->_logFile))) {
+        if (!Util::mkdir(dirname($this->logFile))) {
             throw new FatalException('filelogger init error, mkdir log_dir failed');
         }
     }
@@ -45,7 +45,7 @@ class FileLogger implements LogInterface
      */
     public function log(string $msg, string $level)
     {
-        if (!Util::mkdir(dirname($this->_logFile))) {
+        if (!Util::mkdir(dirname($this->logFile))) {
             throw new FatalException('filelogger record error, mkdir log_dir failed');
         }
 
@@ -54,12 +54,12 @@ class FileLogger implements LogInterface
 
         try {
             // 切割
-            if (is_file($this->_logFile) && filesize($this->_logFile) > $this->_logMaxSize * 1024 * 1024) {
+            if (is_file($this->logFile) && filesize($this->logFile) > $this->logMaxSize * 1024 * 1024) {
                 self::_rotateFiles();
             }
 
             // 读写
-            if (false === ($fp = @fopen($this->_logFile, 'a'))) {
+            if (false === ($fp = @fopen($this->logFile, 'a'))) {
                 throw new FatalException('unable to append to log file');
             }
             flock($fp, LOCK_EX);
@@ -76,20 +76,20 @@ class FileLogger implements LogInterface
      */
     private function _rotateFiles()
     {
-        for ($i = $this->_logMaxCount; $i >= 0; $i--) {
-            $rotate_name = dirname($this->_logFile) . DIRECTORY_SEPARATOR . self::LOG_FILENAME . ($i == 0 ? '' : '-' . $i) . self::LOG_FILENAME_POSTFIX;
+        for ($i = $this->logMaxCount; $i >= 0; $i--) {
+            $rotateName = dirname($this->logFile) . DIRECTORY_SEPARATOR . self::LOG_FILENAME . ($i == 0 ? '' : '-' . $i) . self::LOG_FILENAME_POSTFIX;
 
-            if (!is_file($rotate_name)) {
+            if (!is_file($rotateName)) {
                 continue;
             }
 
-            if ($i == $this->_logMaxCount) {
-                if (!Util::unlink($rotate_name)) {
+            if ($i == $this->logMaxCount) {
+                if (!Util::unlink($rotateName)) {
                     throw new FatalException('unlink log file failed ');
                 }
             } else {
-                $rotate_next = dirname($this->_logFile) . DIRECTORY_SEPARATOR . self::LOG_FILENAME . '-' . ($i + 1) . self::LOG_FILENAME_POSTFIX;
-                if (!rename($rotate_name, $rotate_next)) {
+                $$rotateNext = dirname($this->logFile) . DIRECTORY_SEPARATOR . self::LOG_FILENAME . '-' . ($i + 1) . self::LOG_FILENAME_POSTFIX;
+                if (!rename($rotateName, $$rotateNext)) {
                     throw new FatalException('rename log file failed ');
                 }
             }
