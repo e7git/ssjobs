@@ -24,6 +24,7 @@ e7git@outlook.com
 .
 ├── composer.json
 ├── config_example.php	# 配置文件示例
+├── producer_example.php	# 生产者示例
 ├── LICENSE
 ├── README.md
 └── src
