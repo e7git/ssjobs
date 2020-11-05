@@ -236,7 +236,7 @@ EOF;
         }
 
         echo (new Process())->readStatusInfo($fileIsLatest);
-        return false;
+        return true;
     }
 
     /**

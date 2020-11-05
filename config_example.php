@@ -16,7 +16,7 @@ return [
     
     // 日志 [必填]
     'log' => [
-        'class' => '\Sayhey\Jobs\Demo\FileLogger',          // [必填] 日志类，必须继承[Sayhey\Jobs\Interfaces\LogInterface]
+        'class' => '\Sayhey\Jobs\Demo\FileLogger',          // [必填] 日志类，必须实现[Sayhey\Jobs\Interfaces\LogInterface]
         'params' => [                                       // 日志类所用参数，按需设置
             'log_dir' => __DIR__ . '/data/logs' 
         ]           
@@ -24,7 +24,7 @@ return [
     
     // 队列 [必填]
     'queue' => [
-        'class' => '\Sayhey\Jobs\Demo\RedisQueue',          // [必填] 队列类，必须继承[Sayhey\Jobs\Interfaces\QueueInterface]
+        'class' => '\Sayhey\Jobs\Demo\RedisQueue',          // [必填] 队列类，必须实现[Sayhey\Jobs\Interfaces\QueueInterface]
         'params' => [                                       // 队列类所用参数，按需设置
             'host' => '127.0.0.1',
             'port' => 6379,
@@ -36,7 +36,7 @@ return [
     
     // 通知 [选填]
     'notifier' => [
-        'class' => '\Sayhey\Jobs\Demo\DingTalkNotifier',    // [可选必填] 通知类，必须继承[Sayhey\Jobs\Interfaces\DingTalkNotifier]
+        'class' => '\Sayhey\Jobs\Demo\DingTalkNotifier',    // [可选必填] 通知类，必须实现[Sayhey\Jobs\Interfaces\DingTalkNotifier]
         'params' => [                                       // 通知类所用参数，按需设置
             'token' => 'xxxxxx', 
             'prefix' => 'prefix'
@@ -49,7 +49,7 @@ return [
     'jobs' => [
         [
             'topic' => 'test.topic',                        // [必填] 主题，即队列主题
-            'consumer' => '\Sayhey\Jobs\Demo\TestConsumer', // [必填] 消费者类，必须继承[Sayhey\Jobs\Interfaces\ConsumerInterface]
+            'consumer' => '\Sayhey\Jobs\Demo\TestConsumer', // [必填] 消费者类，必须实现[Sayhey\Jobs\Interfaces\ConsumerInterface]
             'static_workers' => 2,                          // 静态子进程数（1至1024之间的整数，默认1）
             'dynamic_workers' => 2,                         // 动态子进程数（0至1024之间的整数，默认0）
             'queue_health_size' => 100,                     // 健康的队列长度（默认0，即不判断队列健康）
