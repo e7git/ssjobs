@@ -38,6 +38,7 @@ class Process
     private $beginTime = 0;                             // 记录进程开始时间
     private $workers = [];                              // 子进程列表
     private $jobs = [];                                 // 任务列表
+    private $notifierWorkerPid = 0;                     // 通知子进程ID
 
     /**
      * 共享内存表
@@ -293,7 +294,11 @@ class Process
                     $pid = $ret['pid'];
                     $worker = $this->workers[$pid] ?? null;
                     if (!$worker) {
-                        Log::error('worker pid not found, pid=' . $pid);
+                        // 通知子进程则忽略
+                        if ($pid == $this->notifierWorkerPid) {
+                            continue;
+                        }
+                        Log::error('worker pid not found, pid=' . $pid . '#' . $this->notifierWorkerPid);
                     }
                     unset($this->workers[$pid]);
 
@@ -316,7 +321,7 @@ class Process
                         }
                         Log::info("worker restart, signal={$param}, pid={$newPid}, type={$worker->getWorkType()}");
                     } else {
-                        Log::info("worker exit, signal={$param}, pid={$pid}, type={$worker->getWorkType()}");
+                        Log::info("worker exit, signal={$param}, pid={$pid}, type=" . ($worker ? $worker->getWorkType() : ''));
                     }
 
                     // 释放worker资源
@@ -391,14 +396,30 @@ class Process
             \Swoole\Timer::tick(300000, function() {
                 foreach ($this->jobs as $job) {
                     if (!!$notification = $job->getTriggerNotification()) {
-                        $error = sprintf("[%s][pname=%s][topic=%s]%s：%s", date('Y-m-d H:i:s'), $this->processName, $job->getTopic(), '任务监控警报', implode('，', $notification));
-                        $notifier = $this->notifier;
-                        go(function() use($notifier, $error) {
-                            $notifier->send($error);
-                        });
+                        $this->notifierWorker(sprintf("[%s][pname=%s][topic=%s]%s：%s"
+                                        , date('Y-m-d H:i:s')
+                                        , $this->processName
+                                        , $job->getTopic()
+                                        , '任务监控警报'
+                                        , implode('，', $notification)
+                        ));
                     }
                 }
             });
+        }
+    }
+
+    /**
+     * 创建通知子进程处理通知
+     * @param string $msg
+     */
+    private function notifierWorker(string $msg)
+    {
+        if (!$this->notifierWorkerPid || !\Swoole\Process::kill($this->notifierWorkerPid, 0)) {
+            $this->notifierWorkerPid = (new \Swoole\Process(function() use ($msg) {
+                        Util::setProcessName('worker-notifier:' . $this->processName);
+                        $this->notifier->send($msg);
+                    }, false, 0, true))->start();
         }
     }
 

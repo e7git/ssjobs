@@ -11,7 +11,7 @@ use Sayhey\Jobs\Interfaces\NotifierInterface;
 class DingTalkNotifier implements NotifierInterface
 {
 
-    private $api = 'https://oapi.dingtalk.com/robot/send?accesstoken=';
+    private $api = 'https://oapi.dingtalk.com/robot/send?access_token=';
     private $prefix = '';
     private $token = '';
 
