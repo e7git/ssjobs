@@ -38,7 +38,7 @@ class Process
     private $beginTime = 0;                             // 记录进程开始时间
     private $workers = [];                              // 子进程列表
     private $jobs = [];                                 // 任务列表
-    private $notifierWorkerPid = 0;                     // 通知子进程ID
+    private $notifierWorkerPid = 0;                     // 通知者子进程ID
 
     /**
      * 共享内存表
@@ -294,7 +294,7 @@ class Process
                     $pid = $ret['pid'];
                     $worker = $this->workers[$pid] ?? null;
                     if (!$worker) {
-                        // 通知子进程则忽略
+                        // 通知者子进程则忽略
                         if ($pid == $this->notifierWorkerPid) {
                             continue;
                         }
@@ -410,7 +410,7 @@ class Process
     }
 
     /**
-     * 创建通知子进程处理通知
+     * 创建通知者子进程处理通知
      * @param string $msg
      */
     private function notifierWorker(string $msg)
@@ -573,7 +573,7 @@ class Process
         $str .= PHP_EOL;
 
         // 运行信息
-        $str .= '# Rumtime' . PHP_EOL;
+        $str .= '# Runtime' . PHP_EOL;
         $str .= "Start: \t\t\t" . date('Y-m-d H:i:s', $this->beginTime) . PHP_EOL;
         $str .= "Now: \t\t\t" . date('Y-m-d H:i:s') . PHP_EOL;
         $str .= "Duration: \t\t" . (floor($extime / 60) . 'm ' . ($extime % 60) . 's') . PHP_EOL;
