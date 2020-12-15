@@ -2,7 +2,6 @@
 
 namespace Sayhey\Jobs\Core;
 
-use Sayhey\Jobs\Common\Config;
 use Sayhey\Jobs\Exception\FatalException;
 use Sayhey\Jobs\Interfaces\QueueInterface;
 
@@ -16,17 +15,17 @@ class Queue
     /**
      * 获取队列
      * @param string $topic
+     * @param array $config
      * @return QueueInterface
      * @throws FatalException
      * @throws Exception
      */
-    public static function getQueue(string $topic)
+    public static function getQueue(string $topic, array $config)
     {
-        $config = Config::get('queue');
-        $class = $config['class'];
+        $class = $config['class'] ?? '';
         $params = (isset($config['params']) && is_array($config['params'])) ? $config['params'] : [];
 
-        if (!class_exists($class)) {
+        if (!$class || !class_exists($class)) {
             throw new FatalException('queue.class ' . $class . ' not exists');
         }
         if (!isset(class_implements($class)[QueueInterface::class])) {

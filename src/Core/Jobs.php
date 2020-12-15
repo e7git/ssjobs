@@ -6,6 +6,7 @@ use Sayhey\Jobs\Common\Util;
 use Sayhey\Jobs\Interfaces\ConsumerInterface;
 use Sayhey\Jobs\Core\Queue;
 use Sayhey\Jobs\Core\Worker;
+use Sayhey\Jobs\Common\Config;
 
 /**
  * Job类
@@ -18,6 +19,7 @@ class Jobs
     private $staticWorkerCount = 1;                     // 静态子进程数
     private $dynamicWorkerCount = 0;                    // 动态子进程数
     private $topic = '';                                // 主题名称
+    private $queueConfig = [];                          // 队列配置
     private $consumerClass;                             // 消费者类
     private $queueHealthSize = 0;                       // 健康的队列长度, 超出后将开启动态进程
     private $workerConfig = [];                         // 子进程配置
@@ -40,6 +42,7 @@ class Jobs
     public function __construct(array $config, string $workerDataDir)
     {
         $this->topic = $config['topic'];
+        $this->queueConfig = $config['queue'] ?? Config::get('queue');
         $this->consumerClass = $config['consumer'];
         $this->staticWorkerCount = $config['static_workers'] ?? 1;
         $this->dynamicWorkerCount = $config['dynamic_workers'] ?? 0;
@@ -52,7 +55,7 @@ class Jobs
             'data_dir' => $workerDataDir
         ];
 
-        $this->queue = Queue::getQueue($this->topic);
+        $this->queue = Queue::getQueue($this->topic, $this->queueConfig);
 
         $this->lastConsumerTime = microtime(true);
     }
@@ -73,6 +76,15 @@ class Jobs
     public function getTopic(): string
     {
         return $this->topic;
+    }
+    
+    /**
+     * 返回主题
+     * @return string
+     */
+    public function getQueueConfig(): array
+    {
+        return $this->queueConfig;
     }
 
     /**

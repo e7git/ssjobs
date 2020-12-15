@@ -156,7 +156,7 @@ class Worker
             $timer_refresh_status = 0;
             $timer_refresh_file = 0;
 
-            $queue = Queue::getQueue($this->job->getTopic());
+            $queue = Queue::getQueue($this->job->getTopic(), $this->job->getQueueConfig());
 
             do {
                 try {

@@ -55,7 +55,16 @@ return [
             'queue_health_size' => 100,                     // 健康的队列长度（默认0，即不判断队列健康）
             'max_execute_time' => 3600,                     // 子进程最长运行时间（单位秒, 0为不限制）
             'max_consumer_count' => 1000,                   // 子进程最多消费成功任务数量（单位秒, 0为不限制）
-            'dynamic_idle_time' => 60                       // 动态子进程闲置的最长时间（单位秒, 0为不限制）
+            'dynamic_idle_time' => 60,                      // 动态子进程闲置的最长时间（单位秒, 0为不限制）
+            'queue' => [                                    // 必要时可以单独为任务设定队列类
+                'class' => '\Sayhey\Jobs\Demo\RedisQueue',          // [必填] 队列类，必须实现[Sayhey\Jobs\Interfaces\QueueInterface]
+                'params' => [                                       // 队列类所用参数，按需设置
+                    'host' => '127.0.0.1',
+                    'port' => 6379,
+                    'pass' => '',
+                    'db' => 0
+                ]
+            ],
         ],
     ]
 ];
