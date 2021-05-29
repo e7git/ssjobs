@@ -39,10 +39,10 @@ return [
         'class' => '\Sayhey\Jobs\Demo\DingTalkNotifier',    // [可选必填] 通知类，必须实现[Sayhey\Jobs\Interfaces\DingTalkNotifier]
         'params' => [                                       // 通知类所用参数，按需设置
             'token' => 'xxxxxx', 
-            'prefix' => 'prefix'
+            'prefix' => 'prefix',
+            'log_notify' => true,                           // 是否允许发送日志通知
+            'jobs_check_notify' => true                     // 是否允许发送任务监控报警
         ],
-        'log_notify' => true,                               // 是否允许发送日志通知
-        'jobs_check_notify' => true                         // 是否允许发送任务监控报警
     ],
     
     // 任务 [必填]
