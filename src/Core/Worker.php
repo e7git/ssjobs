@@ -191,7 +191,7 @@ class Worker
             } while ($where);
 
             // 退出前记录子进程数据
-            $this->saveWorkerInfo();
+            $this->saveWorkerInfo(false, true);
         });
     }
 
@@ -387,6 +387,19 @@ class Worker
             return false;
         }
         return json_decode($data, true);
+    }
+
+    /**
+     * 子进程是否异常退出
+     * @return bool
+     */
+    public function isAborted(): bool
+    {
+        if ((!$info = $this->readDataInfo()) || !empty($info['status'])) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

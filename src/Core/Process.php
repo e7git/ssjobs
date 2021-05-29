@@ -299,7 +299,11 @@ class Process
                             continue;
                         }
                         Log::error('worker pid not found, pid=' . $pid . '#' . $this->notifierWorkerPid);
+                    } elseif ($pid != $this->notifierWorkerPid && $worker->isAborted()) {
+                        Log::error('worker error! master will exit! pid=' . $pid);
+                        $this->safeExit();
                     }
+
                     unset($this->workers[$pid]);
 
                     // 主进程正常运行且子进程是静态类型，则重启该进程
