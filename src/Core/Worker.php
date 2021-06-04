@@ -190,8 +190,8 @@ class Worker
                 }
             } while ($where);
 
-            // 退出前记录子进程数据
-            $this->saveWorkerInfo(false, true);
+            // 退出前删除子进程数据
+            $this->saveWorkerInfo(true);
         });
     }
 
