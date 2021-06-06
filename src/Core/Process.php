@@ -299,9 +299,6 @@ class Process
                             continue;
                         }
                         Log::error('worker pid not found, pid=' . $pid . '#' . $this->notifierWorkerPid);
-                    } elseif ($pid != $this->notifierWorkerPid && $worker->isAborted()) {
-                        Log::error('worker error! master will exit! pid=' . $pid);
-                        $this->safeExit();
                     }
 
                     unset($this->workers[$pid]);

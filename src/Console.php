@@ -27,6 +27,12 @@ class Console
      */
     public function __construct(array $config)
     {
+        // 错误异常捕捉
+        set_error_handler(function ($error_no, $error_msg, $error_file, $error_line) {
+            Log::error("Jobs发生异常！自动关闭！error_no=$error_no, rror_msg=$error_msg, error_file=$error_file, error_line=$error_line");
+            exit;
+        });
+        
         try {
             Config::init($config);
 
