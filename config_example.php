@@ -10,6 +10,7 @@
 return [
     // 进程 [必填]
     'process' => [
+        'user' => 'www:www',                                // 执行用户
         'process_name' => 'ssjobs',                         // 进程名关键词（默认ssjobs，启动后主进程名为master:ssjobs，子进程名为worker:ssjobs）
         'data_dir' => __DIR__ . '/data/process'             // [必填] 进程数据目录（存储进程运行时的数据文件）
     ],

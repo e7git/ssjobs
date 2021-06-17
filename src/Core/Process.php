@@ -32,6 +32,7 @@ class Process
     private $statusGhostInfoFile = '';                  // 存储进程状态残影文件路径
     private $workerDataDir = '';                        // 存储子进程信息文件目录
     private $processName = 'ssjobs';                    // 进程名称
+    private $user = '';                                 // 进程用户
     // 运行时
     private $pid = 0;                                   // 进程ID
     private $status = '';                               // 进程状态
@@ -69,6 +70,7 @@ class Process
 
         // 加载配置
         $this->processName = $config['process_name'] ?? $this->processName;
+        $this->user = $config['user'] ?? $this->user;
         $this->dataDir = rtrim($config['data_dir'], DIRECTORY_SEPARATOR);
         $this->masterPidFile = $this->dataDir . DIRECTORY_SEPARATOR . 'master.pid';
         $this->statusInfoFile = $this->dataDir . DIRECTORY_SEPARATOR . 'status.info';
@@ -100,6 +102,39 @@ class Process
         }
 
         $this->notifier = new $class($params);
+    }
+
+    /**
+     * 设置执行用户，如果未指定用户则提取系统用户
+     * @throws FatalException
+     */
+    protected function setRunUser()
+    {
+        if (empty($this->user)) {
+            $user = $group = '';
+            if (function_exists('posix_getpwuid') && function_exists('posix_getuid')) {
+                $uinfo = posix_getpwuid(posix_getuid());
+                $user = $uinfo['name'] ?? '';
+            }
+            if (function_exists('posix_getgrgid') && function_exists('posix_getgid')) {
+                $ginfo = posix_getgrgid(posix_getgid());
+                $group = $ginfo['name'] ?? '';
+            }
+            $this->user = $user . ':' . $group;
+        } else {
+            $info = explode(':', $this->user);
+            $user = $info[0];
+            if (empty($user)) {
+                throw new FatalException('user who run the process is null');
+            }
+            $group = $info[1] ?? $user;
+            if (function_exists('posix_getgrnam') && function_exists('posix_setgid') && (!!$ginfo = posix_getgrnam($group))) {
+                posix_setgid($ginfo['gid']);
+            }
+            if (function_exists('posix_getpwnam') && function_exists('posix_setuid') && (!!$uinfo = posix_getpwnam($user))) {
+                posix_setuid($uinfo['uid']);
+            }
+        }
     }
 
     /**
@@ -251,6 +286,9 @@ class Process
 
         // 使当前进程蜕变为一个守护进程
         \Swoole\Process::daemon();
+        
+        // 设置执行用户
+        $this->setRunUser();
 
         // 设置进程名
         Util::setProcessName('master:' . $this->processName);
