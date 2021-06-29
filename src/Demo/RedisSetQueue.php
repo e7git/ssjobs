@@ -119,6 +119,25 @@ class RedisSetQueue implements QueueInterface
             throw new FatalException('redis get size error:' . $e->getMessage());
         }
     }
+    
+    /**
+     * 返回当前队列全部长度
+     * @return int
+     */
+    public function allSize(): int
+    {
+        try {
+            $len = $this->command(function() {
+                return $this->handler->zCount($this->queueName, '-inf', '+inf');
+            });
+            if (!$len) {
+                return 0;
+            }
+            return $len ?: 0;
+        } catch (\Exception $e) {
+            throw new FatalException('redis get size error:' . $e->getMessage());
+        }
+    }
 
     /**
      * 执行命令

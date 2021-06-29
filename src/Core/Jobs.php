@@ -104,6 +104,15 @@ class Jobs
     {
         return $this->queue->size();
     }
+    
+    /**
+     * 返回队列全部消息数，包括未触发处理的
+     * @return int
+     */
+    private function getQueueAllSize(): int
+    {
+        return $this->queue->allSize();
+    }
 
     /**
      * 挂载子进程
@@ -208,6 +217,7 @@ class Jobs
     {
         $item = [
             'topic' => $this->getTopic(),
+            'all_queue' => $this->getQueueAllSize(),
             'queue' => $this->getQueueSize(),
             'error' => [],
             'workers' => 0,

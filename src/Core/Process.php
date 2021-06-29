@@ -631,14 +631,14 @@ class Process
         // 任务信息
         $str .= '# Jobs' . PHP_EOL;
         $str .= '------------------------------------------------------------------------------------------------------------------------------------------------------' . PHP_EOL;
-        $str .= $this->formatStatusInfo(['Topic', 'Queue', 'Workers', 'HistoryWorker', 'AvgConsumerTime', 'Done', 'Ack', 'Reject', 'Repush', 'Failed']) . PHP_EOL;
+        $str .= $this->formatStatusInfo(['Topic', 'Wait/All', 'Workers', 'HistoryWorker', 'AvgConsumerTime', 'Done', 'Ack', 'Reject', 'Repush', 'Failed']) . PHP_EOL;
         $str .= '------------------------------------------------------------------------------------------------------------------------------------------------------' . PHP_EOL;
 
 
         foreach ($jobs as $item) {
             $str .= $this->formatStatusInfo([
                         $item['topic'] ?? '-',
-                        $item['queue'] ?? '-',
+                        ($item['queue'] ?? '-') . '/' . $item['all_queue'] ?? '-',
                         $item['workers'] ?? '-',
                         $item['history_workers'] ?? '-',
                         (isset($item['cost']) && is_numeric($item['cost']) && isset($item['done']) && is_numeric($item['done']) && $item['done'] > 0) ? round($item['cost'] / $item['done'], 4) . 's' : '-',
