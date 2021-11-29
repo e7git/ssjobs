@@ -85,6 +85,8 @@ class Util
         } else {
             $ret = @file_put_contents($filename, $content, $mode);
         }
+        
+        @chmod($filename, 0777);
 
         if (false === $ret) {
             return false;
