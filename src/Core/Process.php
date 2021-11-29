@@ -282,10 +282,10 @@ class Process
         Util::unlink($this->masterPidFile);
         Util::unlink($this->statusInfoFile);
 
-        $this->saveStatusInfo();
-
         // 使当前进程蜕变为一个守护进程
         \Swoole\Process::daemon();
+        
+        $this->saveStatusInfo();
         
         // 设置执行用户
         $this->setRunUser();
