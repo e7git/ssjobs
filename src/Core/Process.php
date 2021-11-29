@@ -284,9 +284,7 @@ class Process
 
         // 使当前进程蜕变为一个守护进程
         \Swoole\Process::daemon();
-        
-        $this->saveStatusInfo();
-        
+ 
         // 设置执行用户
         $this->setRunUser();
 
@@ -303,6 +301,9 @@ class Process
 
         // 写主进程pid到文件
         $this->writeMasterPid();
+        
+        // 保存状态
+        $this->saveStatusInfo();
 
         // 初始化共享内存表
         $this->initTable();
